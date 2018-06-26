@@ -20,6 +20,7 @@ the License.
 
 import os
 
+import re
 from lxml import etree, objectify
 from omaha.settings import DEFAULT_CHANNEL
 
@@ -79,6 +80,8 @@ def parse_request(request):
         '{D0AB2EBC-931B-4013-9FEB-C9C4C2225C8C}'
     """
 
+    # Work around broken xml encoding from update_engine
+    request = re.sub(r'oem=""\s*([^" ]+)\s*""', r'oem="\1"', request)
     obj = objectify.fromstring(request, parser)
 
     # Check if this is coming from update_engine, which handles machines not applications
