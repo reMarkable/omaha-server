@@ -342,18 +342,22 @@ def parse_events(events):
 
 @transaction.atomic
 def collect_statistics(request, ip=None):
-    userid = request.get('userid')
-    apps = request.findall('app')
+    try:
+        userid = request.get('userid')
+        apps = request.findall('app')
 
-    if userid:
-        userid_counting(userid, apps, request.os.get('platform'))
+        if userid:
+            userid_counting(userid, apps, request.os.get('platform'))
 
-    if not filter(lambda app: bool(app.findall('event')), apps):
+        if not filter(lambda app: bool(app.findall('event')), apps):
+            return
+
+        req = parse_req(request, ip)
+        req.os = parse_os(request.os)
+        req.hw = parse_hw(request.hw) if request.get('hw') else None
+        req.save()
+
+        parse_apps(apps, req)
+    except ValueError:
+        # Silently choke this in case the request contains broken data (like our old requests do)
         return
-
-    req = parse_req(request, ip)
-    req.os = parse_os(request.os)
-    req.hw = parse_hw(request.hw) if request.get('hw') else None
-    req.save()
-
-    parse_apps(apps, req)
