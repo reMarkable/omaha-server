@@ -82,6 +82,8 @@ def parse_request(request):
 
     # Work around broken xml encoding from update_engine
     request = re.sub(r'oem=""\s*([^" ]+)\s*""', r'oem="\1"', request)
+    # Work around the fix in update_engine that attempts to fix the above
+    request = re.sub(r'oem="\\"\s*([^" ]+)\s*\\""', r'oem="\1"', request)
     obj = objectify.fromstring(request, parser)
 
     # Check if this is coming from update_engine, which handles machines not applications
