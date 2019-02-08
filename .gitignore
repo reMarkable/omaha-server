@@ -34,3 +34,6 @@ deploy/google/app.yaml
 
 ### Vagrant ###
 .vagrant/
+
+venv/
+.idea/
