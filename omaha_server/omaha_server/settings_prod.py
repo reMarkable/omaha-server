@@ -108,6 +108,11 @@ LOGGING = {
             'handlers': ['console'],
             'propagate': False,
         },
+        'omaha.parser': {
+            'level': 'INFO',
+            'handlers': ['console'],
+            'propagate': False,
+        },
     },
 }
 

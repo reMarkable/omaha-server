@@ -18,21 +18,27 @@ License for the specific language governing permissions and limitations under
 the License.
 """
 
+import logging
 import os
-
 import re
+
 from lxml import etree, objectify
+from lxml.etree import XMLSyntaxError
+
 from omaha.settings import DEFAULT_CHANNEL
 
 __all__ = ['parser', 'parse_request']
 
+logger = logging.getLogger(__name__)
 
 BASE_DIR = os.path.dirname(__file__)
 
-with open(os.path.join(BASE_DIR, 'request.xsd')) as f:
-    schema = etree.XMLSchema(file=f)
+def _load_schema(file_name):
+    with open(os.path.join(BASE_DIR, file_name)) as f:
+        return etree.XMLSchema(file=f)
 
-parser = objectify.makeparser(schema=schema)
+parser = objectify.makeparser(schema=_load_schema('request.xsd'))
+_parser_strict = objectify.makeparser(schema=_load_schema('request_strict.xsd'))
 
 
 def parse_request(request):
@@ -85,6 +91,10 @@ def parse_request(request):
     # Work around the fix in update_engine that attempts to fix the above
     request = re.sub(r'oem="\\"\s*([^" ]+)\s*\\""', r'oem="\1"', request)
     obj = objectify.fromstring(request, parser)
+    try:
+        objectify.fromstring(request, _parser_strict)
+    except XMLSyntaxError:
+        logger.info('Request is invalid under strict parsing: %s', request)
 
     # Check if this is coming from update_engine, which handles machines not applications
     if obj.get('userid') == None and obj.app.get('machineid') != None:
