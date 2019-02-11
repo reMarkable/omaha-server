@@ -34,7 +34,7 @@ from omaha.models import Platform
 from sparkle.models import SparkleVersion
 __all__ = ['get_sec_since_midnight', 'get_id']
 
-redis = get_redis_connection('statistics')
+redis = get_redis_connection('default')
 
 
 def get_sec_since_midnight(date):
