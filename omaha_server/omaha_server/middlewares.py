@@ -10,6 +10,8 @@ from omaha.dynamic_preferences_registry import global_preferences_manager as gpm
 from ecdsa import SigningKey
 from ecdsa.util import sigencode_der
 
+import redis
+
 logger = logging.getLogger(__name__)
 
 
@@ -19,7 +21,10 @@ class CUP2Exception(Exception):
 
 class TimezoneMiddleware(object):
     def process_request(self, request):
-        tzname = gpm['Timezone__timezone']
+        try:
+            tzname = gpm['Timezone__timezone']
+        except redis.BusyLoadingError:
+            return HttpResponse(b'Server is starting...', status=503)
         if tzname:
             timezone.activate(pytz.timezone(tzname))
         else:
@@ -97,3 +102,10 @@ class LoggingMiddleware(object):
         if 'live' in request.path:
             logging.info('process_response')
         return response
+
+class RedisBusyMiddleware(object):
+    def __init__(self):
+        super(RedisBusyMiddleware, self).__init__()
+    def process_exception(self, request, exception):
+        if isinstance(exception, redis.BusyLoadingError):
+            return HttpResponse(b'Server is starting...', status=503)

@@ -127,6 +127,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'omaha_server.middlewares.RedisBusyMiddleware'
 )
 
 if IS_PRIVATE:
