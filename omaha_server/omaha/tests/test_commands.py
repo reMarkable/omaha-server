@@ -6,10 +6,9 @@ from django.test import TestCase
 from django.core.management import call_command
 from django.core.files.uploadedfile import SimpleUploadedFile
 
-from bitmapist import YearEvents
+from bitmapist import YearEvents, get_redis
 
 from omaha.tests.utils import temporary_media_root
-from omaha.utils import redis
 from omaha.models import (
     Application,
     Platform,
@@ -23,7 +22,7 @@ from omaha.models import (
 class GenerateFakeDataTest(TestCase):
     @temporary_media_root()
     def setUp(self):
-        redis.flushdb()
+        get_redis().flushdb()
         self.app = Application.objects.create(id='{5FAD27D4-6BFA-4daa-A1B3-5A1F821FEE0F}', name='app')
         self.channel = Channel.objects.create(name='stable')
         self.platform = Platform.objects.create(name='win')
@@ -41,7 +40,7 @@ class GenerateFakeDataTest(TestCase):
             file=SimpleUploadedFile('./chrome_installer.exe', False))
 
     def tearDown(self):
-        redis.flushdb()
+        get_redis().flushdb()
 
     def test_command(self):
         self.assertEqual(0, Request.objects.all().count())
@@ -53,7 +52,7 @@ class GenerateFakeDataTest(TestCase):
 class GenerateFakeStatisticsTest(TestCase):
     @temporary_media_root()
     def setUp(self):
-        redis.flushdb()
+        get_redis().flushdb()
         self.app = Application.objects.create(id='{5FAD27D4-6BFA-4daa-A1B3-5A1F821FEE0F}', name='app')
         self.channel = Channel.objects.create(name='stable')
         self.platform = Platform.objects.create(name='win')
@@ -71,7 +70,7 @@ class GenerateFakeStatisticsTest(TestCase):
             file=SimpleUploadedFile('./chrome_installer.exe', False))
 
     def tearDown(self):
-        redis.flushdb()
+        get_redis().flushdb()
 
     def test_command(self):
         now = datetime.datetime.now()

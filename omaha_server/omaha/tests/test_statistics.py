@@ -28,7 +28,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 
 from mock import patch
 from freezegun import freeze_time
-from bitmapist import DayEvents, HourEvents, mark_event
+from bitmapist import DayEvents, HourEvents, mark_event, get_redis
 
 from omaha.tests import fixtures
 from omaha.parser import parse_request
@@ -69,10 +69,10 @@ from sparkle.statistics import userid_counting as mac_userid_counting
 
 class StatisticsTest(TestCase):
     def setUp(self):
-        redis.flushdb()
+        get_redis('default').flushdb()
 
     def tearDown(self):
-        redis.flushdb()
+        get_redis('default').flushdb()
 
     @patch('omaha.statistics.add_app_statistics')
     def test_userid_counting(self, mock_add_app_statistics):

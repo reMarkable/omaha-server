@@ -30,7 +30,7 @@ from django.core.files.storage import DefaultStorage
 from xmlunittest import XmlTestMixin
 from freezegun import freeze_time
 from mock import patch
-from bitmapist import DayEvents
+from bitmapist import DayEvents, get_redis
 import factory
 
 from omaha.tests import fixtures, OverloadTestStorageMixin
@@ -38,7 +38,7 @@ from omaha.tests.utils import temporary_media_root
 
 from omaha.factories import ApplicationFactory, ChannelFactory, PlatformFactory, VersionFactory
 from omaha.models import Action, Request, EVENT_DICT_CHOICES, Data, NAME_DATA_DICT_CHOICES, Version
-from omaha.utils import redis, get_id
+from omaha.utils import get_id
 
 
 class UpdateViewTest(OverloadTestStorageMixin, TestCase, XmlTestMixin):
@@ -46,11 +46,11 @@ class UpdateViewTest(OverloadTestStorageMixin, TestCase, XmlTestMixin):
 
     def setUp(self):
         self.client = Client()
-        redis.flushdb()
+        get_redis().flushdb()
         super(UpdateViewTest, self).setUp()
 
     def tearDown(self):
-        redis.flushdb()
+        get_redis().flushdb()
         super(UpdateViewTest, self).tearDown()
 
     @freeze_time('2014-01-01 15:41:48')  # 56508 sec

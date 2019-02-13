@@ -201,21 +201,21 @@ REDIS_STAT_PORT = os.environ.get('REDIS_STAT_PORT', REDIS_PORT)
 REDIS_STAT_HOST = os.environ.get('REDIS_STAT_HOST', REDIS_HOST)
 REDIS_STAT_DB = os.environ.get('REDIS_STAT_DB', 15)
 
-def _get_redis_url(host, port, db):
+def get_redis_url(host, port, db):
     auth = ':{}@'.format(REDIS_PASSWORD) if REDIS_PASSWORD else ''
     return 'redis://{}{}:{}/{}'.format(auth, host, port, db)
 
 CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': _get_redis_url(REDIS_HOST, REDIS_PORT, REDIS_DB),
+        'LOCATION': get_redis_url(REDIS_HOST, REDIS_PORT, REDIS_DB),
         'OPTIONS': {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
         }
     },
     'statistics': {
         'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': _get_redis_url(REDIS_STAT_HOST, REDIS_STAT_PORT, REDIS_STAT_DB),
+        'LOCATION': get_redis_url(REDIS_STAT_HOST, REDIS_STAT_PORT, REDIS_STAT_DB),
         'OPTIONS': {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
         }
@@ -241,7 +241,7 @@ BOWER_INSTALLED_APPS = (
 
 from kombu import Queue
 
-BROKER_URL = CELERY_RESULT_BACKEND = _get_redis_url(REDIS_HOST, REDIS_PORT, 3)
+BROKER_URL = CELERY_RESULT_BACKEND = get_redis_url(REDIS_HOST, REDIS_PORT, 3)
 CELERY_DISABLE_RATE_LIMITS = True
 CELERY_RESULT_SERIALIZER = 'msgpack'
 CELERY_MESSAGE_COMPRESSION = 'zlib'

@@ -22,24 +22,20 @@ from django.test import TestCase, RequestFactory
 from datetime import datetime
 
 import mock
-from django_redis import get_redis_connection
-from bitmapist import DayEvents, HourEvents
+from bitmapist import DayEvents, HourEvents, get_redis
 from freezegun import freeze_time
 
 from omaha.utils import get_id
 from sparkle.statistics import add_app_statistics, userid_counting
 
-redis = get_redis_connection('statistics')
-
-
 class StatisticsTest(TestCase):
     request_factory = RequestFactory()
 
     def setUp(self):
-        redis.flushdb()
+        get_redis('default').flushdb()
 
     def tearDown(self):
-        redis.flushdb()
+        get_redis('default').flushdb()
 
     @freeze_time('2016-1-1')
     def test_add_app_statistics(self):
