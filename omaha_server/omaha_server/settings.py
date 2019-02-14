@@ -201,6 +201,11 @@ REDIS_STAT_PORT = os.environ.get('REDIS_STAT_PORT', REDIS_PORT)
 REDIS_STAT_HOST = os.environ.get('REDIS_STAT_HOST', REDIS_HOST)
 REDIS_STAT_DB = os.environ.get('REDIS_STAT_DB', 15)
 
+BITMAPIST_HOST = os.environ.get('BITMAPIST_HOST', REDIS_STAT_HOST)
+BITMAPIST_PORT = os.environ.get('BITMAPIST_PORT', 6380)
+
+REDIS_LOG_DB = os.environ.get('REDIS_LOG_DB', 11)
+
 def get_redis_url(host, port, db):
     auth = ':{}@'.format(REDIS_PASSWORD) if REDIS_PASSWORD else ''
     return 'redis://{}{}:{}/{}'.format(auth, host, port, db)
@@ -216,6 +221,13 @@ CACHES = {
     'statistics': {
         'BACKEND': 'django_redis.cache.RedisCache',
         'LOCATION': get_redis_url(REDIS_STAT_HOST, REDIS_STAT_PORT, REDIS_STAT_DB),
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        }
+    },
+    'log': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': get_redis_url(REDIS_HOST, REDIS_PORT, REDIS_LOG_DB),
         'OPTIONS': {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
         }

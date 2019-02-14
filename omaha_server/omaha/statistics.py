@@ -25,12 +25,10 @@ from builtins import range
 from functools import partial
 from datetime import datetime, timedelta
 
-from django.conf import settings
 from django.db import transaction
 from django.utils import timezone
 from bitmapist import (
-    setup_redis, mark_event, unmark_event,
-    WeekEvents, MonthEvents, DayEvents, HourEvents
+    mark_event, unmark_event, WeekEvents, MonthEvents, DayEvents, HourEvents
 )
 import pytz
 
@@ -38,7 +36,7 @@ from omaha.utils import (
     get_id, is_new_install, valuedispatch,
     redis, get_platforms_by_appid
 )
-from omaha import parser
+from omaha import parser, bitmapist_helper
 from omaha.models import (
     ACTIVE_USERS_DICT_CHOICES, Request, AppRequest,
     Os, Hw, Event, Version, Channel, Platform
@@ -47,11 +45,7 @@ from sparkle.models import SparkleVersion
 
 __all__ = ['userid_counting', 'is_user_active']
 
-setup_redis('default', 
-            settings.REDIS_STAT_HOST,
-            settings.REDIS_STAT_PORT, 
-            db=settings.REDIS_STAT_DB, 
-            password=settings.REDIS_PASSWORD)
+bitmapist_helper.init()
 
 
 def userid_counting(userid, apps_list, platform, now=None):
