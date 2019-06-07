@@ -18,6 +18,7 @@
             <xs:enumeration value="x86"/>
             <xs:enumeration value="x64"/>
             <xs:enumeration value="arm"/>
+            <xs:enumeration value="armv7l"/>
         </xs:restriction>
     </xs:simpleType>
     <xs:simpleType name="GuidType">
