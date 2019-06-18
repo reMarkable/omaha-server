@@ -47,10 +47,10 @@ from sparkle.models import SparkleVersion
 
 __all__ = ['userid_counting', 'is_user_active']
 
-setup_redis('default', 
+setup_redis('default',
             settings.REDIS_STAT_HOST,
-            settings.REDIS_STAT_PORT, 
-            db=settings.REDIS_STAT_DB, 
+            settings.REDIS_STAT_PORT,
+            db=settings.REDIS_STAT_DB,
             password=settings.REDIS_PASSWORD)
 
 
@@ -68,48 +68,18 @@ def add_app_statistics(userid, platform, app, now=None):
     version = app.get('version')
     channel = parser.get_channel(app)
     events = app.findall('event')
-    nextversion = app.get('nextversion')
 
     err_events = filter(lambda x: x.get('eventresult') not in ['1', '2', '3'], events)
     if err_events:
         return
 
-    install_event = filter(lambda x: x.get('eventtype') == '2', events)
-    if is_new_install(appid, userid):
-        if install_event:
-            mark('new_install:%s' % appid, userid)
-            mark('new_install:{}:{}'.format(appid, platform), userid)
-            redis.setbit("known_users:%s" % appid, userid, 1)
-            mark('request:{}:{}'.format(appid, nextversion), userid, track_hourly=True)
-            mark('request:{}:{}:{}'.format(appid, platform, nextversion), userid, track_hourly=True)
-            mark('request:{}:{}:{}:{}'.format(appid, platform, channel, nextversion), userid, track_hourly=True)
-            mark('request:{}:{}'.format(appid, channel), userid)
-            return
-
-    elif userid not in MonthEvents('new_install:{}:{}'.format(appid, platform), year=now.year, month=now.month):
-        mark('request:%s' % appid, userid)
-        mark('request:{}:{}'.format(appid, platform), userid)
-        if nextversion:
-            mark('request:{}:{}'.format(appid, nextversion), userid, track_hourly=True)
-            mark('request:{}:{}:{}'.format(appid, platform, nextversion), userid, track_hourly=True)
-            mark('request:{}:{}:{}:{}'.format(appid, platform, channel, nextversion), userid, track_hourly=True)
-
-    uninstall_event = filter(lambda x: x.get('eventtype') == '4', events)
-    if uninstall_event:
-        mark('uninstall:%s' % appid, userid)
-        mark('uninstall:{}:{}'.format(appid, platform), userid)
-    update_event = filter(lambda x: x.get('eventtype') == '3', events)
-    if update_event:
-        unmark_event('request:{}:{}'.format(appid, version), userid, track_hourly=True)
-        unmark_event('request:{}:{}:{}'.format(appid, platform, version), userid, track_hourly=True)
-        unmark_event('request:{}:{}:{}:{}'.format(appid, platform, channel, version), userid, track_hourly=True)
-        mark('request:{}:{}'.format(appid, nextversion), userid, track_hourly=True)
-        mark('request:{}:{}:{}'.format(appid, platform, nextversion), userid, track_hourly=True)
-        mark('request:{}:{}:{}:{}'.format(appid, platform, channel, nextversion), userid, track_hourly=True)
-    else:
-        mark('request:{}:{}'.format(appid, version), userid, track_hourly=True)
-        mark('request:{}:{}:{}'.format(appid, platform, version), userid, track_hourly=True)
-        mark('request:{}:{}:{}:{}'.format(appid, platform, channel, version), userid, track_hourly=True)
+    mark('trackist_request:{}:{}'.format(appid, version), userid, track_hourly=True)
+    mark('request:{}:{}'.format(appid, version), userid, track_hourly=True)
+    mark('trackist_request:{}:{}:{}'.format(appid, platform, version), userid, track_hourly=True)
+    mark('request:{}:{}:{}'.format(appid, platform, version), userid, track_hourly=True)
+    mark('trackist_request:{}:{}:{}:{}'.format(appid, platform, channel, version), userid, track_hourly=True)
+    mark('request:{}:{}:{}:{}'.format(appid, platform, channel, version), userid, track_hourly=True)
+    mark('trackist_request:{}:{}'.format(appid, channel), userid)
     mark('request:{}:{}'.format(appid, channel), userid)
 
 
@@ -212,7 +182,7 @@ def get_hourly_data_by_platform(app_id, end, n_hours, versions, platform, channe
                   len(HourEvents.from_date(build_event_name(app_id, platform, channel, v), hour))]
                  for hour in hours])
             for v in versions]
-    data = filter(lambda version_data: sum([data[1] for data in version_data[1]]), data)
+    data = filter(lambda version_data: sum([int(data[1]) for data in version_data[1]]), data)
     return dict(data)
 
 
