@@ -134,25 +134,33 @@ def get_channel_statistics(app_id, date=None):
     return data
 
 
-def get_users_versions_by_platform(app_id, platform, date):
+def get_users_versions_by_platform(app_id, platform, start, end):
     if platform == 'mac':
         versions = [str(v) for v in SparkleVersion.objects.filter_by_enabled(app_id=app_id).values_list('short_version', flat=True)]
     else:
         versions = [str(v) for v in Version.objects.filter_by_enabled(app__id=app_id, platform__name=platform).values_list('version', flat=True)]
-    event_name = 'request:{}:{}:{}'
-    data = [(v, len(MonthEvents(event_name.format(app_id, platform, v), date.year, date.month))) for v in versions]
+    data = []
+    if start <= end:
+        for v in versions:
+            event_name = 'request:{}:{}:{}'.format(app_id, platform, v)
+            month = start.year * 12 + start.month - 1
+            events = MonthEvents(event_name, month // 12, month % 12 + 1)
+            for month in range(month + 1, end.year * 12 + end.month):
+                events |= MonthEvents(event_name, month // 12, month % 12 + 1)
+            data.append((v, len(events)))
     data = filter(lambda x: x[1], data)
     return dict(data)
 
 
-def get_users_versions(app_id, date=None):
-    if not date:
-        date = timezone.now()
-
+def get_users_versions(app_id, start=None, end=None):
+    if not start:
+        start = timezone.now()
+    if not end:
+        end = start
     platforms = Platform.objects.values_list('name', flat=True)
     data = dict()                   # try to move it in the separate function
     for platform in platforms:
-        platform_data = get_users_versions_by_platform(app_id, platform, date)
+        platform_data = get_users_versions_by_platform(app_id, platform, start, end)
         data.update({platform: platform_data})
 
     return data

@@ -573,7 +573,7 @@ class StatisticsMonthsMixin(object):
     @is_private()
     def test_default_list(self):
         data_detail = self.data.copy()
-        response = self.client.get(reverse(self.url, args=self.url_args), format='json')
+        response = self.client.get(reverse(self.url, args=self.url_args), self.url_get_params, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(self.serializer(data_detail).data, response.data)
 
@@ -596,12 +596,12 @@ class StatisticsVersionsTest(StatisticsMonthsMixin, APITestCase):
     url = 'api-statistics-versions'
     url_args = ('app',)
     serializer = StatisticsMonthsSerializer
-    url_get_params = dict(date='2016-01')
+    url_get_params = dict(start='2015-01', end='2015-02')
 
     @freeze_time("2016-01-27")
     def setUp(self):
         super(StatisticsVersionsTest, self).setUp()
-        data = get_users_versions(self.app.id)
+        data = {u'win': {'1.0.0.0': 2}, u'mac': {'13.0.782.112': 2}}
         self.data = dict(data=dict(data))
 
 

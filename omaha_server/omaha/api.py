@@ -223,14 +223,14 @@ class StatisticsVersionsView(APIView):
             raise Http404
 
     def get(self, request, app_name, format=None):
-        now = timezone.now()
         app = self.get_object(app_name)
 
-        date = MonthInputSerializer(data=request.GET)
-        date.is_valid()
-        date = date.validated_data.get('date', now)
+        dates = MonthRangeSerializer(data=request.GET)
+        dates.is_valid()
 
-        data = get_users_versions(app.id, date=date)
+        start, end = get_month_range_from_dict(dates.validated_data)
+
+        data = get_users_versions(app.id, start, end)
         serializer = StatisticsMonthsSerializer(dict(data=dict(data)))
         return Response(serializer.data)
 

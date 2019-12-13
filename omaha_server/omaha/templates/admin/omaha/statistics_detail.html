@@ -100,8 +100,10 @@
     </span>
 
     <form id="version-statistics" class="form-inline center" action="">
-        Choose a month:
-        <input type="text" class="input-small input-datepicker" placeholder="Month" name="date">
+        Filter months:
+        <input type="text" class="input-small input-datepicker" placeholder="Start" name="start">
+        to
+        <input type="text" class="input-small input-datepicker" placeholder="End" name="end">
         <button type="button" class="btn">
             <span class="ajax-completed">Apply</span>
             <img class="ajax-loading" src="{% static "statistics/gif/ajax_loader.gif" %}" hidden/>

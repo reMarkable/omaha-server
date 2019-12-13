@@ -1,7 +1,8 @@
 (function ()
 {
     var $statistics = $("#version-statistics"),
-        $date = $statistics.find("input[name='date']"),
+        $start = $statistics.find("input[name='start']"),
+        $end = $statistics.find("input[name='end']"),
         $ajaxButton = $statistics.find('button'),
         app = $('#app_name'),
         appName = app.data('name'),
@@ -11,9 +12,11 @@
         tables = {};
 
     function applyRange() {
-        var date = moment.utc($date.val(), 'YYYY-MM', true);
+        var start = moment.utc($start.val(), 'YYYY-MM', true);
+        var end = moment.utc($end.val(), 'YYYY-MM', true);
         updateGraph({
-            date: date.isValid() ? date.format('YYYY-MM') : ''
+            start: start.isValid() ? start.format('YYYY-MM') : '',
+            end: end.isValid() ? end.format('YYYY-MM') : ''
         })
     }
 
@@ -105,7 +108,8 @@
 
     $(document).ready(function () {
         var now = moment();
-        $date.val(now.format('YYYY-MM'));
+        $start.val(now.format('YYYY-MM'));
+        $end.val(now.format('YYYY-MM'));
         $ajaxButton.prop("disabled", false);
         $ajaxButton.click(applyRange);
         makeGraph();
