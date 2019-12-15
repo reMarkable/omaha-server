@@ -67,13 +67,9 @@ def add_app_statistics(userid, platform, app, now=None):
     if err_events:
         return
 
-    mark('trackist_request:{}:{}'.format(appid, version), userid, track_hourly=True)
     mark('request:{}:{}'.format(appid, version), userid, track_hourly=True)
-    mark('trackist_request:{}:{}:{}'.format(appid, platform, version), userid, track_hourly=True)
     mark('request:{}:{}:{}'.format(appid, platform, version), userid, track_hourly=True)
-    mark('trackist_request:{}:{}:{}:{}'.format(appid, platform, channel, version), userid, track_hourly=True)
     mark('request:{}:{}:{}:{}'.format(appid, platform, channel, version), userid, track_hourly=True)
-    mark('trackist_request:{}:{}'.format(appid, channel), userid)
     mark('request:{}:{}'.format(appid, channel), userid)
 
 
