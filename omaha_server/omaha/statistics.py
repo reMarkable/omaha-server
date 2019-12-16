@@ -100,7 +100,7 @@ def add_app_statistics(userid, platform, app, now=None):
         mark('uninstall:{}:{}'.format(appid, platform), userid)
     update_event = filter(lambda x: x.get('eventtype') == '3', events)
     # For update events, reMarkable's devices currently send nextversion
-    # '0.0.0.0'. The original omaha-server implementation however assumes that
+    # '0.0.0'. The original omaha-server implementation however assumes that
     # nextversion contains the version to which the client was updated.
     # Work around this:
     has_nextversion = nextversion and nextversion != '0.0.0'
