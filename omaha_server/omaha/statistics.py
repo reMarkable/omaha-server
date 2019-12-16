@@ -68,15 +68,23 @@ def add_app_statistics(userid, platform, app, now=None):
     if err_events:
         return
 
+    def mark_request(v):
+        mark('request:{}:{}'.format(appid, v), userid, track_hourly=True)
+        mark('request:{}:{}:{}'.format(appid, platform, v), userid, track_hourly=True)
+        mark('request:{}:{}:{}:{}'.format(appid, platform, channel, v), userid, track_hourly=True)
+
+    def unmark_request(v):
+        unmark_event('request:{}:{}'.format(appid, v), userid, track_hourly=True)
+        unmark_event('request:{}:{}:{}'.format(appid, platform, v), userid, track_hourly=True)
+        unmark_event('request:{}:{}:{}:{}'.format(appid, platform, channel, v), userid, track_hourly=True)
+
     install_event = filter(lambda x: x.get('eventtype') == '2', events)
     if is_new_install(appid, userid):
         if install_event:
             mark('new_install:%s' % appid, userid)
             mark('new_install:{}:{}'.format(appid, platform), userid)
             redis.setbit("known_users:%s" % appid, userid, 1)
-            mark('request:{}:{}'.format(appid, nextversion), userid, track_hourly=True)
-            mark('request:{}:{}:{}'.format(appid, platform, nextversion), userid, track_hourly=True)
-            mark('request:{}:{}:{}:{}'.format(appid, platform, channel, nextversion), userid, track_hourly=True)
+            mark_request(nextversion)
             mark('request:{}:{}'.format(appid, channel), userid)
             return
 
@@ -84,9 +92,7 @@ def add_app_statistics(userid, platform, app, now=None):
         mark('request:%s' % appid, userid)
         mark('request:{}:{}'.format(appid, platform), userid)
         if nextversion:
-            mark('request:{}:{}'.format(appid, nextversion), userid, track_hourly=True)
-            mark('request:{}:{}:{}'.format(appid, platform, nextversion), userid, track_hourly=True)
-            mark('request:{}:{}:{}:{}'.format(appid, platform, channel, nextversion), userid, track_hourly=True)
+            mark_request(nextversion)
 
     uninstall_event = filter(lambda x: x.get('eventtype') == '4', events)
     if uninstall_event:
@@ -94,16 +100,10 @@ def add_app_statistics(userid, platform, app, now=None):
         mark('uninstall:{}:{}'.format(appid, platform), userid)
     update_event = filter(lambda x: x.get('eventtype') == '3', events)
     if update_event:
-        unmark_event('request:{}:{}'.format(appid, version), userid, track_hourly=True)
-        unmark_event('request:{}:{}:{}'.format(appid, platform, version), userid, track_hourly=True)
-        unmark_event('request:{}:{}:{}:{}'.format(appid, platform, channel, version), userid, track_hourly=True)
-        mark('request:{}:{}'.format(appid, nextversion), userid, track_hourly=True)
-        mark('request:{}:{}:{}'.format(appid, platform, nextversion), userid, track_hourly=True)
-        mark('request:{}:{}:{}:{}'.format(appid, platform, channel, nextversion), userid, track_hourly=True)
+        unmark_request(version)
+        mark_request(nextversion)
     else:
-        mark('request:{}:{}'.format(appid, version), userid, track_hourly=True)
-        mark('request:{}:{}:{}'.format(appid, platform, version), userid, track_hourly=True)
-        mark('request:{}:{}:{}:{}'.format(appid, platform, channel, version), userid, track_hourly=True)
+        mark_request(version)
     mark('request:{}:{}'.format(appid, channel), userid)
 
 
