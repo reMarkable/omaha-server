@@ -103,7 +103,7 @@ def add_app_statistics(userid, platform, app, now=None):
     # '0.0.0.0'. The original omaha-server implementation however assumes that
     # nextversion contains the version to which the client was updated.
     # Work around this:
-    has_nextversion = nextversion and nextversion != '0.0.0.0'
+    has_nextversion = nextversion and nextversion != '0.0.0'
     if update_event and has_nextversion:
         unmark_request(version)
         mark_request(nextversion)
