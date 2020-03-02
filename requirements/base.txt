@@ -10,6 +10,8 @@ django-absolute==0.3
 django-versionfield3==0.1.8
 raven==5.17.0
 django-redis==4.4.3
+# Later redis versions produce "Invalid input of type CacheKey" errors.
+redis==2.10.6
 bitmapist==3.97
 singledispatch==3.4.0.3
 django-bower==5.1.0
