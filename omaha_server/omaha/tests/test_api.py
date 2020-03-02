@@ -255,10 +255,11 @@ class VersionTest(OverloadTestStorageMixin, BaseTest, APITestCase):
     @is_private()
     @temporary_media_root(MEDIA_URL='http://cache.pack.google.com/edgedl/chrome/install/782.112/')
     def test_create(self):
+        channels = [ChannelFactory.create().id, ChannelFactory.create().id]
         data = dict(
             app=ApplicationFactory.create().id,
             platform=PlatformFactory.create().id,
-            channel=ChannelFactory.create().id,
+            channels=channels,
             version='1.2.3.4',
             file=SimpleUploadedFile("chrome.exe", b'content'),
         )
@@ -268,6 +269,7 @@ class VersionTest(OverloadTestStorageMixin, BaseTest, APITestCase):
         self.assertEqual(response.data, self.serializer(version).data)
         self.assertEqual(version.file_size, len(b'content'))
         self.assertTrue(version.is_enabled)
+        self.assertEqual(set(version.channels.values_list('id', flat=True)), set(channels))
 
     @is_private()
     @temporary_media_root(MEDIA_URL='http://cache.pack.google.com/edgedl/chrome/install/782.112/')
@@ -275,7 +277,7 @@ class VersionTest(OverloadTestStorageMixin, BaseTest, APITestCase):
         data = dict(
             app=ApplicationFactory.create().id,
             platform=PlatformFactory.create().id,
-            channel=ChannelFactory.create().id,
+            channels=[ChannelFactory.create().id],
             version='1.2.3.4',
             file=SimpleUploadedFile("chrome.exe", b'content'),
             is_enabled=False,
@@ -361,16 +363,16 @@ class LiveStatistics(APITestCase):
         self.version1 = Version.objects.create(
             app=self.app,
             platform=self.platform,
-            channel=self.channel,
             version='1.0.0.0',
             file=SimpleUploadedFile('./chrome_installer.exe', False))
+        self.version1.channels.add(self.channel)
 
         self.version2 = Version.objects.create(
             app=self.app,
             platform=self.platform,
-            channel=self.channel2,
             version='2.0.0.0',
             file=SimpleUploadedFile('./chrome_installer.exe', False))
+        self.version2.channels.add(self.channel2)
 
         self.sparkle_version1 = SparkleVersion.objects.create(
             app=self.app,
@@ -519,15 +521,15 @@ class StatisticsMonthsMixin(object):
         self.version1 = Version.objects.create(
             app=self.app,
             platform=self.platform,
-            channel=self.channel,
             version='1.0.0.0',
             file=SimpleUploadedFile('./chrome_installer.exe', False))
+        self.version1.channels.add(self.channel)
         self.version2 = Version.objects.create(
             app=self.app,
             platform=self.platform,
-            channel=self.channel,
             version='2.0.0.0',
             file=SimpleUploadedFile('./chrome_installer.exe', False))
+        self.version2.channels.add(self.channel)
         self.mac_version = SparkleVersion.objects.create(
             app=self.app,
             channel=self.channel,

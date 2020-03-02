@@ -40,9 +40,10 @@ class LatestVersionView(APIView):
 
     def get(self, request, format=None):
         win_versions = Version.objects.filter_by_enabled()\
-            .select_related('app__name', 'channel__name')\
-            .order_by('app__name', 'channel__name', '-version')\
-            .distinct('app__name', 'channel__name')
+            .select_related('app__name')\
+            .prefetch_related('channels')\
+            .order_by('app__name', 'channels__name', '-version')\
+            .distinct('app__name', 'channels__name')
         mac_versions = SparkleVersion.objects.filter_by_enabled()\
             .select_related('app__name', 'channel__name')\
             .order_by('app__name', 'channel__name', '-short_version')\
@@ -50,8 +51,9 @@ class LatestVersionView(APIView):
 
         recursive_dd = lambda: defaultdict(recursive_dd)
         data = recursive_dd()
-        for v in win_versions:
-            data[v.app.name]['win'][v.channel.name] = dict(version=str(v.version), url=v.file_absolute_url)
+        for v in reversed(win_versions):
+            for channel in v.channels.all():
+                data[v.app.name]['win'][channel.name] = dict(version=str(v.version), url=v.file_absolute_url)
         for v in mac_versions:
             data[v.app.name]['mac'][v.channel.name] = dict(version=str(v.short_version), url=v.file_absolute_url)
         return Response(data)

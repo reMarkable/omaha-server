@@ -62,11 +62,21 @@ class VersionFactory(factory.DjangoModelFactory):
 
     app = factory.lazy_attribute(lambda x: ApplicationFactory())
     platform = factory.lazy_attribute(lambda x: PlatformFactory())
-    channel = factory.lazy_attribute(lambda x: ChannelFactory())
     version = '37.0.2062.124'
     file = SimpleUploadedFile('./chrome_installer.exe', b' ' * 123)
     file_size = 123
     file_hash = 'ojan8ermbNHlI5czkED+nc01rxk='
+
+    @factory.post_generation
+    def channels(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            for channel in extracted:
+                self.channels.add(channel)
+        else:
+            self.channels.add(ChannelFactory.create())
 
 
 class RequestFactory(factory.DjangoModelFactory):

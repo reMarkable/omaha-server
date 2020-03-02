@@ -92,8 +92,8 @@ class Channel(BaseModel):
 
 
 def version_upload_to(obj, filename):
-    return os.path.join('build', obj.app.name, obj.channel.name,
-                        obj.platform.name, str(obj.version), filename)
+    return os.path.join('build', obj.app.name, obj.platform.name,
+                        str(obj.version), filename)
 
 
 def _version_upload_to(*args, **kwargs):
@@ -106,7 +106,7 @@ class Version(BaseModel):
     is_critical = models.BooleanField(default=False)
     app = models.ForeignKey(Application)
     platform = models.ForeignKey(Platform, db_index=True)
-    channel = models.ForeignKey(Channel, db_index=True)
+    channels = models.ManyToManyField(Channel, db_index=True)
     version = VersionField(help_text='Format: 255.255.65535.65535', number_bits=(8, 8, 16, 16), db_index=True)
     release_notes = models.TextField(blank=True, null=True)
     file = models.FileField(upload_to=_version_upload_to, null=True,
@@ -120,10 +120,10 @@ class Version(BaseModel):
     class Meta:
         db_table = 'versions'
         unique_together = (
-            ('app', 'platform', 'channel', 'version'),
+            ('app', 'platform', 'version'),
         )
         index_together = (
-            ('app', 'platform', 'channel', 'version'),
+            ('app', 'platform', 'version'),
         )
         ordering = ['id']
 

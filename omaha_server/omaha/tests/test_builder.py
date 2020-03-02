@@ -47,13 +47,13 @@ class BuilderTest(TestCase):
 
         self.assertEqual(version, get_version(version.app.pk,
                                               version.platform.name,
-                                              version.channel.name,
+                                              version.channels.get().name,
                                               '36.0.2062.124',
                                               userid))
 
         self.assertEqual(version, get_version(version.app.pk,
                                               version.platform.name,
-                                              version.channel.name,
+                                              version.channels.get().name,
                                               '',
                                               userid))
 
@@ -65,9 +65,10 @@ class BuilderTest(TestCase):
             file=SimpleUploadedFile('./chrome_installer.exe', b''),
             app=version.app,
             platform=version.platform,
-            channel=version.channel,
             version='39.0.0.0',
         )
+        channel = version.channels.get()
+        version_beta.channels.add(channel)
 
         PartialUpdate.objects.create(version=version_beta,
                                      percent=5,
@@ -77,13 +78,13 @@ class BuilderTest(TestCase):
 
         self.assertEqual(version, get_version(version.app.pk,
                                               version.platform.name,
-                                              version.channel.name,
+                                              channel.name,
                                               '36.0.2062.124',
                                               userid))
 
         self.assertEqual(version_beta, get_version(version.app.pk,
                                                    version.platform.name,
-                                                   version.channel.name,
+                                                   channel.name,
                                                    '36.0.2062.124',
                                                    userid_beta))
 
@@ -95,9 +96,9 @@ class BuilderTest(TestCase):
             file=SimpleUploadedFile('./chrome_installer.exe', b''),
             app=version.app,
             platform=version.platform,
-            channel=channel_beta,
             version='39.0.0.0',
         )
+        version_beta.channels.add(channel_beta)
 
         self.assertEqual(version_beta, get_version(version.app.pk,
                                               version.platform.name,
@@ -113,9 +114,10 @@ class BuilderTest(TestCase):
             file=SimpleUploadedFile('./chrome_installer.exe', b''),
             app=version.app,
             platform=version.platform,
-            channel=version.channel,
             version='39.0.0.0',
         )
+        channel = version.channels.get()
+        version_beta.channels.add(channel)
 
         PartialUpdate.objects.create(version=version_beta,
                                      percent=5,
@@ -125,19 +127,19 @@ class BuilderTest(TestCase):
 
         self.assertEqual(version, get_version(version.app.pk,
                                               version.platform.name,
-                                              version.channel.name,
+                                              channel.name,
                                               '36.0.2062.124',
                                               userid))
 
         self.assertEqual(version_beta, get_version(version.app.pk,
                                                    version.platform.name,
-                                                   version.channel.name,
+                                                   channel.name,
                                                    '36.0.2062.124',
                                                    userid_beta))
 
         self.assertEqual(version, get_version(version.app.pk,
                                               version.platform.name,
-                                              version.channel.name,
+                                              channel.name,
                                               '',
                                               userid_beta))
 
@@ -146,13 +148,14 @@ class BuilderTest(TestCase):
         userid_beta = "{%s}" % UUID(int=40)
         userid_beta_not_active = "{%s}" % UUID(int=60)
         version = VersionFactory.create(file=SimpleUploadedFile('./chrome_installer.exe', b''))
+        channel = version.channels.get()
         version_beta = Version.objects.create(
             file=SimpleUploadedFile('./chrome_installer.exe', b''),
             app=version.app,
             platform=version.platform,
-            channel=version.channel,
             version='39.0.0.0',
         )
+        version_beta.channels.add(channel)
 
 
         id = get_id(userid_beta)
@@ -165,18 +168,18 @@ class BuilderTest(TestCase):
 
         self.assertEqual(version, get_version(version.app.pk,
                                               version.platform.name,
-                                              version.channel.name,
+                                              channel.name,
                                               '36.0.2062.124',
                                               userid))
 
         self.assertEqual(version_beta, get_version(version.app.pk,
                                                    version.platform.name,
-                                                   version.channel.name,
+                                                   channel.name,
                                                    '36.0.2062.124',
                                                    userid_beta))
 
         self.assertEqual(version, get_version(version.app.pk,
                                               version.platform.name,
-                                              version.channel.name,
+                                              channel.name,
                                               '36.0.2062.124',
                                               userid_beta_not_active))

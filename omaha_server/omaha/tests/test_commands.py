@@ -29,15 +29,15 @@ class GenerateFakeDataTest(TestCase):
         self.version1 = Version.objects.create(
             app=self.app,
             platform=self.platform,
-            channel=self.channel,
             version='1.0.0.0',
             file=SimpleUploadedFile('./chrome_installer.exe', False))
+        self.version1.channels.add(self.channel)
         self.version2 = Version.objects.create(
             app=self.app,
             platform=self.platform,
-            channel=self.channel,
             version='2.0.0.0',
             file=SimpleUploadedFile('./chrome_installer.exe', False))
+        self.version2.channels.add(self.channel)
 
     def tearDown(self):
         get_redis().flushdb()
@@ -59,15 +59,15 @@ class GenerateFakeStatisticsTest(TestCase):
         self.version1 = Version.objects.create(
             app=self.app,
             platform=self.platform,
-            channel=self.channel,
             version='1.0.0.0',
             file=SimpleUploadedFile('./chrome_installer.exe', False))
+        self.version1.channels.add(self.channel)
         self.version2 = Version.objects.create(
             app=self.app,
             platform=self.platform,
-            channel=self.channel,
             version='2.0.0.0',
             file=SimpleUploadedFile('./chrome_installer.exe', False))
+        self.version2.channels.add(self.channel)
 
     def tearDown(self):
         get_redis().flushdb()

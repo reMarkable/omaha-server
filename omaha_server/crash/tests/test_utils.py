@@ -267,7 +267,10 @@ class BaseGetChannelTest(object):
         version = self.factory()
         build_number = self.get_number_version(version)
         channel = get_channel(build_number, self.os)
-        self.assertEqual(channel, version.channel.name)
+        self.assertEqual(channel, self._get_channel_from_version(version).name)
+
+    def _get_channel_from_version(self, version):
+        raise NotImplementedError
 
     def test_ambiguity(self):
         version = self.factory.create_batch(2)[0]
@@ -288,10 +291,18 @@ class BaseGetChannelTest(object):
 
 
 class OmahaGetChannelTest(test.TestCase, BaseGetChannelTest):
+
     factory = VersionFactory
     os = 'Windows NT'
 
+    def _get_channel_from_version(self, version):
+        return version.channels.get()
+
 
 class SparkleGetChannelTest(test.TestCase, BaseGetChannelTest):
+
     factory = SparkleVersionFactory
     os = 'Mac OS X'
+
+    def _get_channel_from_version(self, version):
+        return version.channel

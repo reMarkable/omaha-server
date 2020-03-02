@@ -15,11 +15,11 @@ class DownloadsTest(APITestCase):
         self.platform = PlatformFactory(name='win')
         self.channel = ChannelFactory(name='alpha')
         self.stable_channel = ChannelFactory(name='stable')
-        self.win_v1 = VersionFactory(version='10.0.0.0', app=self.app, channel=self.channel, platform=self.platform)
-        self.win_v2 = VersionFactory(version='42.0.1.0', app=self.app, channel=self.channel, platform=self.platform)
+        self.win_v1 = VersionFactory(version='10.0.0.0', app=self.app, channels=(self.channel,), platform=self.platform)
+        self.win_v2 = VersionFactory(version='42.0.1.0', app=self.app, channels=(self.channel,), platform=self.platform)
         self.win_stable_v = VersionFactory(version='23.0.0.0', app=self.app,
-                                           channel=self.stable_channel, platform=self.platform)
-        self.win_disabled_v = VersionFactory(version='55.0.2.0', app=self.app, channel=self.channel,
+                                           channels=(self.channel, self.stable_channel), platform=self.platform)
+        self.win_disabled_v = VersionFactory(version='55.0.2.0', app=self.app, channels=(self.channel,),
                                              platform=self.platform, is_enabled=False)
 
         self.mac_v1 = SparkleVersionFactory(short_version='10.0.0.0', version='0.0',
