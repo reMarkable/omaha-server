@@ -74,7 +74,7 @@ class UpdateViewTest(OverloadTestStorageMixin, TestCase, XmlTestMixin):
         obj = VersionFactory.create(
             app=app,
             platform=platform,
-            channel=channel,
+            channels=(channel,),
             version='13.0.782.112',
             file=SimpleUploadedFile('./chrome_installer.exe', b'_' * 23963192),
             file_size=23963192)
@@ -117,7 +117,7 @@ class UpdateViewTest(OverloadTestStorageMixin, TestCase, XmlTestMixin):
         first_version = VersionFactory.create(
             app=app,
             platform=platform,
-            channel=channel,
+            channels=(channel,),
             version='13.0.782.110',
             file=SimpleUploadedFile('./chrome_installer_first.exe', b'_' * 23963192),
             file_size=23963192)
@@ -128,7 +128,7 @@ class UpdateViewTest(OverloadTestStorageMixin, TestCase, XmlTestMixin):
             is_critical=True,
             app=app,
             platform=platform,
-            channel=channel,
+            channels=(channel,),
             version='13.0.782.111',
             file=SimpleUploadedFile('./chrome_installer_critical.exe', b'_' * 23963192),
             file_size=23963192)
@@ -138,7 +138,7 @@ class UpdateViewTest(OverloadTestStorageMixin, TestCase, XmlTestMixin):
         last_version = VersionFactory.create(
             app=app,
             platform=platform,
-            channel=channel,
+            channels=(channel,),
             version='13.0.782.112',
             file=SimpleUploadedFile('./chrome_installer.exe', b'_' * 23963192),
             file_size=23963192)
@@ -166,7 +166,7 @@ class UpdateViewTest(OverloadTestStorageMixin, TestCase, XmlTestMixin):
         first_version = VersionFactory.create(
             app=app,
             platform=platform,
-            channel=channel,
+            channels=(channel, channel2),
             version='13.0.782.110',
             file=SimpleUploadedFile('./chrome_installer_first.exe', b'_' * 23963192),
             file_size=23963192)
@@ -177,7 +177,7 @@ class UpdateViewTest(OverloadTestStorageMixin, TestCase, XmlTestMixin):
             is_critical=True,
             app=app,
             platform=platform,
-            channel=channel2,
+            channels=(channel2,),
             version='13.0.782.111',
             file=SimpleUploadedFile('./chrome_installer_critical.exe', b'_' * 23963192),
             file_size=23963192)
@@ -187,7 +187,7 @@ class UpdateViewTest(OverloadTestStorageMixin, TestCase, XmlTestMixin):
         last_version = VersionFactory.create(
             app=app,
             platform=platform,
-            channel=channel,
+            channels=(channel, channel2),
             version='13.0.782.112',
             file=SimpleUploadedFile('./chrome_installer.exe', b'_' * 23963192),
             file_size=23963192)
@@ -242,13 +242,14 @@ class UpdateViewTest(OverloadTestStorageMixin, TestCase, XmlTestMixin):
         self.assertEqual(len(app1_install_events), 0)
         self.assertEqual(len(app2_install_events), 0)
 
-        app = ApplicationFactory.create(id='{D0AB2EBC-931B-4013-9FEB-C9C4C2225C8C}', name='chrome')
+        app = ApplicationFactory.create(id=appid2, name='chrome')
         platform = PlatformFactory.create(name='win')
         channel = ChannelFactory.create(name='stable')
+        channel2 = ChannelFactory.create(name='alpha')
         obj = VersionFactory.create(
             app=app,
             platform=platform,
-            channel=channel,
+            channels=(channel, channel2),
             version='13.0.782.112',
             file=SimpleUploadedFile('./chrome_installer.exe', b'_' * 23963192))
         obj.file_hash = 'VXriGUVI0TNqfLlU02vBel4Q3Zo='
@@ -320,7 +321,7 @@ class UpdateViewTest(OverloadTestStorageMixin, TestCase, XmlTestMixin):
         obj = VersionFactory.create(
             app=app,
             platform=platform,
-            channel=channel,
+            channels=(channel,),
             version='13.0.782.112',
             file=SimpleUploadedFile('./chrome_installer.exe', b'_' * 23963192),
             file_size=23963192)

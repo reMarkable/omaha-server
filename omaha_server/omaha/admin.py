@@ -65,13 +65,12 @@ class PartialUpdateInline(admin.StackedInline):
     model = PartialUpdate
     extra = 0
 
-
 @admin.register(Version)
 class VersionAdmin(admin.ModelAdmin):
-    inlines = (ActionInline, PartialUpdateInline,)
-    list_display = ('created', 'modified', 'app', 'version', 'channel', 'platform', 'is_enabled', 'is_critical',)
+    inlines = (ActionInline, PartialUpdateInline)
+    list_display = ('created', 'modified', 'app', 'version', 'platform', 'is_enabled', 'is_critical',)
     list_display_links = ('created', 'modified', 'version',)
-    list_filter = ('channel__name', 'platform__name', 'app__name',)
+    list_filter = ('channels__name', 'platform__name', 'app__name',)
     readonly_fields = ('file_hash',)
     form = VersionAdminForm
 

@@ -35,7 +35,7 @@ class VersionManagerTest(TestCase):
         version_disabled = VersionFactory.create(
             app=version.app,
             platform=version.platform,
-            channel=version.channel,
+            channels=(version.channels.get(),),
             is_enabled=False,
             version='38.0.2062.125',
             file=SimpleUploadedFile('./chrome_installer2.exe', False))

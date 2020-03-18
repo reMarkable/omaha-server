@@ -59,10 +59,11 @@ def generate_events(app_id, **options):
         for version in versions:
             for i in range(random.randint(0, 20)):
                 id = uuid.UUID(int=i)
-                request = event_updatecheck % (id, app_id, version.version, version.channel)
-                request = bytes(request, 'utf8')
-                request = parse_request(request)
-                collect_statistics(request)
+                for channel in version.channels.all():
+                    request = event_updatecheck % (id, app_id, version.version, channel)
+                    request = bytes(request, 'utf8')
+                    request = parse_request(request)
+                    collect_statistics(request)
 
     start = timezone.now() - timezone.timedelta(hours=n_hours)
 

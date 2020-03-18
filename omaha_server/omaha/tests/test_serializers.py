@@ -90,7 +90,7 @@ class VersionSerializerTest(TestCase):
             is_critical=version.is_critical,
             app=version.app.id,
             platform=version.platform.id,
-            channel=version.channel.id,
+            channels=[version.channels.get().id],
             version=str(version.version),
             release_notes=version.release_notes,
             file=version.file.url,
@@ -106,7 +106,7 @@ class VersionSerializerTest(TestCase):
         data = dict(
             app=version.app.id,
             platform=version.platform.id,
-            channel=version.channel.id,
+            channels=[version.channels.get().id],
             version='4.3.2.1',
             release_notes=version.release_notes,
             file=version.file,

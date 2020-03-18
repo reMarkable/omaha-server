@@ -57,9 +57,8 @@ class VersionModelTest(OverloadTestStorageMixin, test.TestCase):
     def test_version_upload_to(self):
         version = VersionFactory.create(file=SimpleUploadedFile('./chrome_installer.exe', False))
         self.assertEqual(version_upload_to(version, 'chrome_installer.exe'),
-                         'build/{}/{}/{}/{}/chrome_installer.exe'.format(
+                         'build/{}/{}/{}/chrome_installer.exe'.format(
                              version.app.name,
-                             version.channel.name,
                              version.platform.name,
                              version.version,
                              version.file.name,
@@ -85,12 +84,12 @@ class VersionModelTest(OverloadTestStorageMixin, test.TestCase):
     @test.override_settings(OMAHA_URL_PREFIX='http://example.com')
     def test_property_default_storage(self):
         version = VersionFactory.create(file=SimpleUploadedFile('./chrome_installer.exe', ''))
-        _url = 'http://example.com/static/media/build/%s/%s/%s/37.0.2062.124/chrome_installer.exe' \
-              % (version.app.name, version.channel.name, version.platform.name)
+        _url = 'http://example.com/static/media/build/%s/%s/37.0.2062.124/chrome_installer.exe' \
+              % (version.app.name, version.platform.name)
         self.assertEqual(version.file_absolute_url, _url)
         self.assertEqual(version.file_package_name, 'chrome_installer.exe')
-        _url = u'http://example.com/static/media/build/%s/%s/%s/37.0.2062.124/' \
-               % (version.app.name, version.channel.name, version.platform.name)
+        _url = u'http://example.com/static/media/build/%s/%s/37.0.2062.124/' \
+               % (version.app.name, version.platform.name)
         self.assertEqual(version.file_url, _url)
 
     @temporary_media_root(MEDIA_URL='http://cache.pack.google.com/edgedl/chrome/install/782.112/')

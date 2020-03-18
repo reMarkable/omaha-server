@@ -80,12 +80,12 @@ class VersionSerializer(serializers.HyperlinkedModelSerializer):
     is_enabled = serializers.BooleanField(default=True, required=False)
     app = serializers.PrimaryKeyRelatedField(queryset=Application.objects.all())
     platform = serializers.PrimaryKeyRelatedField(queryset=Platform.objects.all())
-    channel = serializers.PrimaryKeyRelatedField(queryset=Channel.objects.all())
+    channels = serializers.PrimaryKeyRelatedField(queryset=Channel.objects.all(), many=True)
     version = serializers.CharField()
 
     class Meta:
         model = Version
-        fields = ('id', 'is_enabled', 'is_critical', 'app', 'platform', 'channel',
+        fields = ('id', 'is_enabled', 'is_critical', 'app', 'platform', 'channels',
                   'version', 'release_notes', 'file', 'file_hash', 'file_size',
                   'created', 'modified')
         read_only_fields = ('created', 'modified')

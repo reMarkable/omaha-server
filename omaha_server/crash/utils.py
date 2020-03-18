@@ -150,8 +150,10 @@ def get_channel(build_number, os):
     try:
         if os == 'Mac OS X':      # We expect that sparkle supports only Mac platform
             version = SparkleVersion.objects.select_related('channel').get(short_version=build_number)
+            channel = version.channel
         else:                       # All other platforms will be related to Omaha
-            version = Version.objects.select_related('channel').get(version=build_number)
+            version = Version.objects.prefetch_related('channels').get(version=build_number)
+            channel = version.channels.get()
     except (MultipleObjectsReturned, ObjectDoesNotExist, ValidationError):
         return 'undefined'
-    return version.channel.name
+    return channel.name
