@@ -1,18 +1,17 @@
+-r base.txt
 # Freeze transitive deps. and ones only required in production:
-
+amqp==1.4.9
 Jinja2==2.10.3
 MarkupSafe==1.1.1
 Pillow==3.2.0
-Unidecode==1.1.1amqp==1.4.9
+Unidecode==1.1.1
 anyjson==0.3.3
 billiard==3.3.0.23
 contextlib2==0.6.0.post1
 django-appconf==1.0.3
 enum34==1.1.6
 funcy==1.13
-future==0.16.0
 futures==3.3.0
-google-cloud==0.34.0
 gunicorn==19.6.0
 kombu==3.0.37
 lxml==3.6.0
