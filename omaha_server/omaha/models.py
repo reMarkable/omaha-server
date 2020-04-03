@@ -82,7 +82,7 @@ class Platform(BaseModel):
 
 @python_2_unicode_compatible
 class Channel(BaseModel):
-    name = models.CharField(verbose_name='Channel', max_length=10, unique=True, db_index=True)
+    name = models.CharField(verbose_name='Channel', max_length=100, unique=True, db_index=True)
 
     class Meta:
         db_table = 'channels'
