@@ -58,7 +58,7 @@ class BaseModel(models.Model):
 @python_2_unicode_compatible
 class Application(BaseModel):
     id = models.CharField(max_length=38, primary_key=True)
-    name = models.CharField(verbose_name='App', max_length=30, unique=True)
+    name = models.CharField(verbose_name='App', max_length=100, unique=True)
 
     class Meta:
         db_table = 'applications'
@@ -70,8 +70,8 @@ class Application(BaseModel):
 
 @python_2_unicode_compatible
 class Platform(BaseModel):
-    name = models.CharField(verbose_name='Platform', max_length=10, unique=True, db_index=True)
-    verbose_name = models.CharField(max_length=20, blank=True)
+    name = models.CharField(verbose_name='Platform', max_length=100, unique=True, db_index=True)
+    verbose_name = models.CharField(max_length=100, blank=True)
 
     class Meta:
         db_table = 'platforms'
