@@ -68,11 +68,24 @@ class PartialUpdateInline(admin.StackedInline):
 @admin.register(Version)
 class VersionAdmin(admin.ModelAdmin):
     inlines = (ActionInline, PartialUpdateInline)
-    list_display = ('created', 'modified', 'app', 'version', 'platform', 'is_enabled', 'is_critical',)
+    list_display = ('created', 'modified', 'app', 'version', 'get_channels', 'platform', 'is_enabled', 'is_critical',)
     list_display_links = ('created', 'modified', 'version',)
     list_filter = ('channels__name', 'platform__name', 'app__name',)
     readonly_fields = ('file_hash',)
     form = VersionAdminForm
+
+    def get_queryset(self, version):
+        qs = super(VersionAdmin, self).get_queryset(version)
+        return qs.prefetch_related('channels')
+
+    def get_channels(self, version):
+        # Sort by created on the assumption that channels will typically be
+        # created in order of maturity (alpha -> beta -> stable).
+        return ', '.join(
+            ch.name for ch in
+            sorted(version.channels.all(), key=lambda ch: ch.created)
+        )
+    get_channels.short_description = 'Channels'
 
 
 def my_display_for_field(value, field, *args, **kwargs):
