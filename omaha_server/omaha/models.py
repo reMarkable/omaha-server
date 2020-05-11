@@ -113,6 +113,8 @@ class Version(BaseModel):
                             storage=public_read_storage)
     file_hash = models.CharField(verbose_name='Hash', max_length=140,
                                  null=True, blank=True)
+    file_sha256 = models.CharField(verbose_name='SHA-256', max_length=44,
+                                   null=True, blank=True)
     file_size = models.PositiveIntegerField(null=True, blank=True)
 
     objects = VersionManager()
@@ -201,6 +203,8 @@ class Action(BaseModel):
                       and getattr(self, field.name)])
         if self.terminateallbrowsers:
             attrs['terminateallbrowsers'] = 'true'
+        if self.event == EVENT_DICT_CHOICES['postinstall']:
+            attrs['sha256'] = self.version.file_sha256
         attrs.update(self.other or {})
         return attrs
 
@@ -333,10 +337,13 @@ def pre_version_save(sender, instance, *args, **kwargs):
             finally:
                 old.file_size = 0
     sha1 = hashlib.sha1()
+    sha256 = hashlib.sha256()
     for chunk in instance.file.chunks():
         sha1.update(chunk)
+        sha256.update(chunk)
     instance.file.seek(0)
     instance.file_hash = base64.b64encode(sha1.digest()).decode()
+    instance.file_sha256 = base64.b64encode(sha256.digest()).decode()
 
 
 

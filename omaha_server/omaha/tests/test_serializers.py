@@ -95,6 +95,7 @@ class VersionSerializerTest(TestCase):
             release_notes=version.release_notes,
             file=version.file.url,
             file_hash=version.file_hash,
+            file_sha256=version.file_sha256,
             file_size=version.file_size,
             created=version.created.strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
             modified=version.modified.strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
@@ -111,6 +112,7 @@ class VersionSerializerTest(TestCase):
             release_notes=version.release_notes,
             file=version.file,
             file_hash=version.file_hash,
+            file_sha256=version.file_sha256
         )
 
         new_version = VersionSerializer(data=data)

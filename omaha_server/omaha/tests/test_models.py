@@ -106,6 +106,7 @@ class VersionModelTest(OverloadTestStorageMixin, test.TestCase):
         version = VersionFactory.create(file=SimpleUploadedFile('./chrome_installer.exe', b''))
         self.assertEqual(version.file.size, 0)
         self.assertEqual(version.file_hash, '2jmj7l5rSw0yVb/vlWAYkK/YBwk=')
+        self.assertEqual(version.file_sha256, '47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=')
 
 
 class ActionModelTest(test.TestCase):
@@ -141,5 +142,6 @@ class ActionModelTest(test.TestCase):
                 terminateallbrowsers='true',
                 version='13.0.782.112',
                 onsuccess='exitsilentlyonlaunchcmd',
+                sha256=ver.file_sha256
             )
         )

@@ -21,7 +21,9 @@ the License.
 from uuid import UUID
 from django.core.files.uploadedfile import SimpleUploadedFile
 
+import base64
 import factory
+import hashlib
 
 
 class ApplicationFactory(factory.DjangoModelFactory):
@@ -56,6 +58,17 @@ class ChannelFactory(factory.DjangoModelFactory):
     name = factory.Sequence(lambda n: 'channel%s' % n)
 
 
+_version_file = b' ' * 123
+
+_sha1 = hashlib.sha1()
+_sha1.update(_version_file)
+_version_file_sha1 = base64.b64encode(_sha1.digest()).decode()
+
+_sha256 = hashlib.sha256()
+_sha256.update(_version_file)
+_version_file_sha256 = base64.b64encode(_sha256.digest()).decode()
+
+
 class VersionFactory(factory.DjangoModelFactory):
     class Meta:
         model = 'omaha.Version'
@@ -63,9 +76,10 @@ class VersionFactory(factory.DjangoModelFactory):
     app = factory.lazy_attribute(lambda x: ApplicationFactory())
     platform = factory.lazy_attribute(lambda x: PlatformFactory())
     version = '37.0.2062.124'
-    file = SimpleUploadedFile('./chrome_installer.exe', b' ' * 123)
-    file_size = 123
-    file_hash = 'ojan8ermbNHlI5czkED+nc01rxk='
+    file = SimpleUploadedFile('./chrome_installer.exe', _version_file)
+    file_size = len(_version_file)
+    file_hash = _version_file_sha1
+    file_sha256 = _version_file_sha256
 
     @factory.post_generation
     def channels(self, create, extracted, **kwargs):
@@ -77,6 +91,13 @@ class VersionFactory(factory.DjangoModelFactory):
                 self.channels.add(channel)
         else:
             self.channels.add(ChannelFactory.create())
+
+
+del _version_file
+del _sha1
+del _version_file_sha1
+del _sha256
+del _version_file_sha256
 
 
 class RequestFactory(factory.DjangoModelFactory):

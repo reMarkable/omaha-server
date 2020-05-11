@@ -17,21 +17,18 @@ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 License for the specific language governing permissions and limitations under
 the License.
 """
-
 from datetime import datetime, timedelta
+from functools import partial
 
 from django.test import TestCase
 from django.test.client import Client
 from django.core.urlresolvers import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.db.models import signals
-from django.core.files.storage import DefaultStorage
 
 from xmlunittest import XmlTestMixin
 from freezegun import freeze_time
 from mock import patch
 from bitmapist import DayEvents, get_redis
-import factory
 
 from omaha.tests import fixtures, OverloadTestStorageMixin
 from omaha.tests.utils import temporary_media_root
@@ -71,15 +68,7 @@ class UpdateViewTest(OverloadTestStorageMixin, TestCase, XmlTestMixin):
         app = ApplicationFactory.create(id='{D0AB2EBC-931B-4013-9FEB-C9C4C2225C8C}', name='chrome')
         platform = PlatformFactory.create(name='win')
         channel = ChannelFactory.create(name='stable')
-        obj = VersionFactory.create(
-            app=app,
-            platform=platform,
-            channels=(channel,),
-            version='13.0.782.112',
-            file=SimpleUploadedFile('./chrome_installer.exe', b'_' * 23963192),
-            file_size=23963192)
-        obj.file_hash = 'VXriGUVI0TNqfLlU02vBel4Q3Zo='
-        obj.save()
+        obj = self._create_version(app, platform, (channel,), '13.0.782.112', './chrome_installer.exe')
 
         Action.objects.create(
             version=obj,
@@ -107,6 +96,23 @@ class UpdateViewTest(OverloadTestStorageMixin, TestCase, XmlTestMixin):
                                         fixtures.response_update_check_positive)
 
 
+    def _create_version(self, app, platform, channels, version, file_name, **kwargs):
+        # Give each version / file different contents, so our tests pick up wrong SHA-256s:
+        contents = (version + file_name).encode('utf-8')
+        obj = VersionFactory.create(
+            app=app,
+            platform=platform,
+            channels=channels,
+            version=version,
+            file=SimpleUploadedFile(file_name, contents),
+            file_size=len(contents),
+            **kwargs)
+        # Force a constant file_hash:
+        obj.file_hash = 'VXriGUVI0TNqfLlU02vBel4Q3Zo='
+        obj.save()
+        return obj
+
+
     @freeze_time('2014-01-01 15:41:48')  # 56508 sec
     @temporary_media_root(MEDIA_URL='http://cache.pack.google.com/edgedl/chrome/install/782.112/')
     @patch('omaha.models.version_upload_to', lambda o, f: f)
@@ -114,36 +120,11 @@ class UpdateViewTest(OverloadTestStorageMixin, TestCase, XmlTestMixin):
         app = ApplicationFactory.create(id='{D0AB2EBC-931B-4013-9FEB-C9C4C2225C8C}', name='chrome')
         platform = PlatformFactory.create(name='win')
         channel = ChannelFactory.create(name='stable')
-        first_version = VersionFactory.create(
-            app=app,
-            platform=platform,
-            channels=(channel,),
-            version='13.0.782.110',
-            file=SimpleUploadedFile('./chrome_installer_first.exe', b'_' * 23963192),
-            file_size=23963192)
-        first_version.file_hash = 'VXriGUVI0TNqfLlU02vBel4Q3Zo='
-        first_version.save()
 
-        critical_version = VersionFactory.create(
-            is_critical=True,
-            app=app,
-            platform=platform,
-            channels=(channel,),
-            version='13.0.782.111',
-            file=SimpleUploadedFile('./chrome_installer_critical.exe', b'_' * 23963192),
-            file_size=23963192)
-        critical_version.file_hash = 'VXriGUVI0TNqfLlU02vBel4Q3Zo='
-        critical_version.save()
-
-        last_version = VersionFactory.create(
-            app=app,
-            platform=platform,
-            channels=(channel,),
-            version='13.0.782.112',
-            file=SimpleUploadedFile('./chrome_installer.exe', b'_' * 23963192),
-            file_size=23963192)
-        last_version.file_hash = 'VXriGUVI0TNqfLlU02vBel4Q3Zo='
-        last_version.save()
+        create_version = partial(self._create_version, app, platform, (channel,))
+        create_version('13.0.782.110', './chrome_installer_first.exe')
+        create_version('13.0.782.111', './chrome_installer_critical.exe', is_critical=True)
+        create_version('13.0.782.112', './chrome_installer.exe')
 
         response = self.client.post(reverse('update'),
                                     fixtures.request_update_check, content_type='text/xml')
@@ -163,36 +144,12 @@ class UpdateViewTest(OverloadTestStorageMixin, TestCase, XmlTestMixin):
         platform = PlatformFactory.create(name='win')
         channel = ChannelFactory.create(name='stable')
         channel2 = ChannelFactory.create(name='alpha')
-        first_version = VersionFactory.create(
-            app=app,
-            platform=platform,
-            channels=(channel, channel2),
-            version='13.0.782.110',
-            file=SimpleUploadedFile('./chrome_installer_first.exe', b'_' * 23963192),
-            file_size=23963192)
-        first_version.file_hash = 'VXriGUVI0TNqfLlU02vBel4Q3Zo='
-        first_version.save()
 
-        critical_version = VersionFactory.create(
-            is_critical=True,
-            app=app,
-            platform=platform,
-            channels=(channel2,),
-            version='13.0.782.111',
-            file=SimpleUploadedFile('./chrome_installer_critical.exe', b'_' * 23963192),
-            file_size=23963192)
-        critical_version.file_hash = 'VXriGUVI0TNqfLlU02vBel4Q3Zo='
-        critical_version.save()
-
-        last_version = VersionFactory.create(
-            app=app,
-            platform=platform,
-            channels=(channel, channel2),
-            version='13.0.782.112',
-            file=SimpleUploadedFile('./chrome_installer.exe', b'_' * 23963192),
-            file_size=23963192)
-        last_version.file_hash = 'VXriGUVI0TNqfLlU02vBel4Q3Zo='
-        last_version.save()
+        create_version = partial(self._create_version, app, platform)
+        create_version((channel, channel2), '13.0.782.110', './chrome_installer_first.exe')
+        create_version((channel2,), '13.0.782.111', './chrome_installer_critical.exe', is_critical=True)
+        last_version = create_version(
+            (channel, channel2), '13.0.782.112', './chrome_installer.exe')
 
         Action.objects.create(
             version=last_version,
@@ -246,14 +203,9 @@ class UpdateViewTest(OverloadTestStorageMixin, TestCase, XmlTestMixin):
         platform = PlatformFactory.create(name='win')
         channel = ChannelFactory.create(name='stable')
         channel2 = ChannelFactory.create(name='alpha')
-        obj = VersionFactory.create(
-            app=app,
-            platform=platform,
-            channels=(channel, channel2),
-            version='13.0.782.112',
-            file=SimpleUploadedFile('./chrome_installer.exe', b'_' * 23963192))
-        obj.file_hash = 'VXriGUVI0TNqfLlU02vBel4Q3Zo='
-        obj.save()
+
+        obj = self._create_version(
+            app, platform, (channel, channel2), '13.0.782.112', './chrome_installer.exe')
 
         Action.objects.create(
             version=obj,
@@ -318,15 +270,8 @@ class UpdateViewTest(OverloadTestStorageMixin, TestCase, XmlTestMixin):
         app = ApplicationFactory.create(id='{430FD4D0-B729-4F61-AA34-91526481799D}', name='chrome')
         platform = PlatformFactory.create(name='win')
         channel = ChannelFactory.create(name='stable')
-        obj = VersionFactory.create(
-            app=app,
-            platform=platform,
-            channels=(channel,),
-            version='13.0.782.112',
-            file=SimpleUploadedFile('./chrome_installer.exe', b'_' * 23963192),
-            file_size=23963192)
-        obj.file_hash = 'VXriGUVI0TNqfLlU02vBel4Q3Zo='
-        obj.save()
+
+        self._create_version(app, platform, (channel,), '13.0.782.112', './chrome_installer.exe')
 
         Data.objects.create(
             app=app,
