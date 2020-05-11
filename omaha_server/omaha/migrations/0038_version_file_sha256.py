@@ -13,7 +13,12 @@ def add_sha256_to_existing(apps, _):
     # Work around a bug in VersionField:
     Version._meta.get_field_by_name('version')[0].number_bits = (8, 8, 16, 16)
     for version in Version.objects.all():
-        _update_without_changing_modified_time(Version, version, 'file_sha256', get_sha256(version))
+        try:
+            sha256 = get_sha256(version)
+        except IOError:
+            print('Could not read file of version %d.' % version.pk)
+            continue
+        _update_without_changing_modified_time(Version, version, 'file_sha256', sha256)
     Action = apps.get_model('omaha', 'Action')
     for action in Action.objects.filter(event=2):
         other = action.other
