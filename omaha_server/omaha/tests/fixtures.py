@@ -126,7 +126,7 @@ response_update_check_positive = b"""<?xml version="1.0" encoding="UTF-8"?>
         </packages>
         <actions>
           <action arguments="--do-not-launch-chrome" event="install" run="chrome_installer.exe"/>
-          <action version="13.0.782.112" event="postinstall" onsuccess="exitsilentlyonlaunchcmd" sha256="8+ARR4+QDJtH9wwt4DXY4ZRFFvHiELoUw7Wn6pVXdhY="/>
+          <action version="13.0.782.112" event="postinstall" onsuccess="exitsilentlyonlaunchcmd" sha256="8+ARR4+QDJtH9wwt4DXY4ZRFFvHiELoUw7Wn6pVXdhY=" DisablePayloadBackoff="true"/>
         </actions>
       </manifest>
     </updatecheck>

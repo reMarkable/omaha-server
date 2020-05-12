@@ -238,7 +238,7 @@ class TestRequestScheme(TestCase, XmlTestMixin):
                 )]),
                 actions=Actions([
                     Action(event='install', arguments='--do-not-launch-chrome', run='chrome_installer.exe'),
-                    Action(event='postinstall', version='13.0.782.112', onsuccess='exitsilentlyonlaunchcmd', sha256='8+ARR4+QDJtH9wwt4DXY4ZRFFvHiELoUw7Wn6pVXdhY='),
+                    Action(event='postinstall', version='13.0.782.112', onsuccess='exitsilentlyonlaunchcmd', sha256='8+ARR4+QDJtH9wwt4DXY4ZRFFvHiELoUw7Wn6pVXdhY=', DisablePayloadBackoff='true')
                 ])
             )
         )

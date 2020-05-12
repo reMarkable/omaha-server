@@ -204,7 +204,9 @@ class Action(BaseModel):
         if self.terminateallbrowsers:
             attrs['terminateallbrowsers'] = 'true'
         if self.event == EVENT_DICT_CHOICES['postinstall']:
+            # Add attributes expected by update_engine:
             attrs['sha256'] = self.version.file_sha256
+            attrs['DisablePayloadBackoff'] = 'true'
         attrs.update(self.other or {})
         return attrs
 

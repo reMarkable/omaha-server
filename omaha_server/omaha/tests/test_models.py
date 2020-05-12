@@ -142,6 +142,7 @@ class ActionModelTest(test.TestCase):
                 terminateallbrowsers='true',
                 version='13.0.782.112',
                 onsuccess='exitsilentlyonlaunchcmd',
-                sha256=ver.file_sha256
+                sha256=ver.file_sha256,
+                DisablePayloadBackoff='true'
             )
         )
