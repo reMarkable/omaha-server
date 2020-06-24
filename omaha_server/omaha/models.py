@@ -109,6 +109,9 @@ class Version(BaseModel):
     channels = models.ManyToManyField(Channel, db_index=True)
     version = VersionField(help_text='Format: 255.255.65535.65535', number_bits=(8, 8, 16, 16), db_index=True)
     release_notes = models.TextField(blank=True, null=True)
+    allowed_user_ids = models.TextField(verbose_name='Allowed user IDs',
+        blank=True, help_text='Separated by line breaks. If empty, all users have access.'
+    )
     file = models.FileField(upload_to=_version_upload_to, null=True,
                             storage=public_read_storage)
     file_hash = models.CharField(verbose_name='Hash', max_length=140,

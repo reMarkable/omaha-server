@@ -20,6 +20,7 @@ the License.
 from datetime import datetime, timedelta
 from functools import partial
 
+from cacheops import invalidate_all as invalidate_model_caches
 from django.test import TestCase
 from django.test.client import Client
 from django.core.urlresolvers import reverse
@@ -48,6 +49,9 @@ class UpdateViewTest(OverloadTestStorageMixin, TestCase, XmlTestMixin):
 
     def tearDown(self):
         get_redis().flushdb()
+        # We are creating Version objects, which builder.py caches.
+        # Prevent cross-test dependencies by clearing caches here.
+        invalidate_model_caches()
         super(UpdateViewTest, self).tearDown()
 
     @freeze_time('2014-01-01 15:41:48')  # 56508 sec
@@ -65,6 +69,17 @@ class UpdateViewTest(OverloadTestStorageMixin, TestCase, XmlTestMixin):
     @temporary_media_root(MEDIA_URL='http://cache.pack.google.com/edgedl/chrome/install/782.112/')
     @patch('omaha.models.version_upload_to', lambda o, f: f)
     def test_updatecheck_positive(self):
+        self._set_up_positive_updatecheck()
+        response = self.client.post(reverse('update'),
+                                    fixtures.request_update_check, content_type='text/xml')
+
+        self.assertEqual(response.status_code, 200)
+
+        self.assertXmlDocument(response.content)
+        self.assertXmlEquivalentOutputs(response.content,
+                                        fixtures.response_update_check_positive)
+
+    def _set_up_positive_updatecheck(self):
         app = ApplicationFactory.create(id='{D0AB2EBC-931B-4013-9FEB-C9C4C2225C8C}', name='chrome')
         platform = PlatformFactory.create(name='win')
         channel = ChannelFactory.create(name='stable')
@@ -86,6 +101,18 @@ class UpdateViewTest(OverloadTestStorageMixin, TestCase, XmlTestMixin):
             )
         )
 
+        return app, platform, channel
+
+    @freeze_time('2014-01-01 15:41:48')  # 56508 sec
+    @temporary_media_root(MEDIA_URL='http://cache.pack.google.com/edgedl/chrome/install/782.112/')
+    @patch('omaha.models.version_upload_to', lambda o, f: f)
+    def test_updatecheck_allowed_user_ids(self):
+        app, platform, channel = self._set_up_positive_updatecheck()
+        v = self._create_version(
+            app, platform, (channel,), '13.0.782.111', './chrome_installer_critical.exe',
+            is_critical=True, allowed_user_ids='some-nonexistent-device-id'
+        )
+
         response = self.client.post(reverse('update'),
                                     fixtures.request_update_check, content_type='text/xml')
 
@@ -94,6 +121,19 @@ class UpdateViewTest(OverloadTestStorageMixin, TestCase, XmlTestMixin):
         self.assertXmlDocument(response.content)
         self.assertXmlEquivalentOutputs(response.content,
                                         fixtures.response_update_check_positive)
+
+        v.allowed_user_ids = '{D0BBD725-742D-44ae-8D46-0231E881D58E}'
+        v.save()
+
+        response = self.client.post(reverse('update'),
+                                    fixtures.request_update_check,
+                                    content_type='text/xml')
+
+        self.assertEqual(response.status_code, 200)
+
+        self.assertXmlDocument(response.content)
+        self.assertXmlEquivalentOutputs(response.content,
+                                        fixtures.response_update_check_postitive_critical)
 
 
     def _create_version(self, app, platform, channels, version, file_name, **kwargs):

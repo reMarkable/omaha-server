@@ -32,3 +32,11 @@
 	right: auto;
 	margin-left: 0;
 }
+
+/*
+ * DjangoSuit tries too hard to make things pretty, at the expense of
+ * readability. Fix this:
+ */
+textarea {
+	width: auto;
+}

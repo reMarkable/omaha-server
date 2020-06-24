@@ -68,6 +68,12 @@ class VersionAdminForm(forms.ModelForm):
         _file = self.cleaned_data["file"]
         return _file.size
 
+    def clean_allowed_user_ids(self):
+        return '\n'.join(
+            line.strip()
+            for line in self.cleaned_data['allowed_user_ids'].split('\n')
+            if line.strip()
+        )
 
 class ActionAdminForm(forms.ModelForm):
     SUCCESSSACTION_CHOICES = (

@@ -29,7 +29,7 @@ from lxml import etree
 from cacheops import cached_as
 
 from omaha import tasks
-from omaha.models import Version
+from omaha.models import Version, PartialUpdate
 from omaha.parser import parse_request
 from omaha import parser
 from omaha.statistics import is_user_active
@@ -77,60 +77,54 @@ def is_new_user(version):
 
 
 @cached_as(Version, timeout=60)
-def _get_version(partialupdate, app_id, platform, channel, version, date=None):
-    date = date or now()
+def _get_versions(app_id, platform, channel, version):
+    date = now().date()
 
     qs = Version.objects.select_related('app')
     qs = qs.filter_by_enabled(app=app_id,
                               platform__name=platform,
                               channels__name=channel)
-    qs = qs.filter(version__gt=version) if version else qs
+    if version:
+        qs = qs.filter(version__gt=version)
+    qs = qs.filter(
+        Q(partialupdate__isnull=True) |
+        Q(partialupdate__is_enabled=False) |
+        Q(
+            partialupdate__is_enabled=True,
+            partialupdate__start_date__lte=date,
+            partialupdate__end_date__gte=date
+        )
+    )
     qs = qs.prefetch_related("actions", "partialupdate")
+    critical = []
+    normal = []
+    for version in qs.order_by('-version').cache():
+        if version.is_critical:
+            if not is_new_user(version):
+                critical.append(version)
+        else:
+            normal.append(version)
+    return critical + normal
 
-    if partialupdate:
+def get_version(app_id, platform, channel, version, userid):
+    for v in _get_versions(app_id, platform, channel, version):
         try:
-            qs = qs.filter(partialupdate__is_enabled=True,
-                           partialupdate__start_date__lte=date,
-                           partialupdate__end_date__gte=date)
-            critical_version = qs.filter(is_critical=True).order_by('version').cache().first()
-            new_version = qs.cache().latest('version')
-        except Version.DoesNotExist:
-            return None
-    else:
-        qs = qs.filter(Q(partialupdate__isnull=True)
-                       | Q(partialupdate__is_enabled=False))
-        try:
-            critical_version = qs.filter(is_critical=True).order_by('version').cache().first()
-            new_version = qs.cache().latest('version')
-        except:
-            raise Version.DoesNotExist
-    if not is_new_user(version) and critical_version:
-        return critical_version
-    return new_version
-
-
-def get_version(app_id, platform, channel, version, userid, date=None):
-    try:
-        new_version = _get_version(True, app_id, platform, channel, version, date=date)
-
-        if not new_version:
-            raise Version.DoesNotExist
-
-        if new_version.partialupdate.exclude_new_users and is_new_user(version):
-            raise Version.DoesNotExist
-
-        if not is_user_active(new_version.partialupdate.active_users, userid):
-            raise Version.DoesNotExist
-
-        userid_int = UUID(userid).int
-        percent = new_version.partialupdate.percent
-        if not (userid_int % int(100 / percent)) == 0:
-            raise Version.DoesNotExist
-    except Version.DoesNotExist:
-        new_version = _get_version(False, app_id, platform, channel, version, date=date)
-
-    return new_version
-
+            pu = v.partialupdate
+        except PartialUpdate.DoesNotExist:
+            pass
+        else:
+            if pu.exclude_new_users and is_new_user(version):
+                continue
+            if not is_user_active(pu.active_users, userid):
+                continue
+            userid_int = UUID(userid).int
+            percent = pu.percent
+            if not (userid_int % int(100 / percent)) == 0:
+                continue
+        if v.allowed_user_ids and userid not in v.allowed_user_ids.split('\n'):
+            continue
+        return v
+    raise Version.DoesNotExist
 
 def on_app(apps_list, app, os, userid):
     app_id = app.get('appid')
