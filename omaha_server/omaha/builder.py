@@ -106,7 +106,7 @@ def _get_versions(app_id, platform, channel, version):
             normal.append(version)
     return critical + normal
 
-def get_version(app_id, platform, channel, version, userid):
+def get_version(app_id, platform, channel, version, userid, oem_id=''):
     for v in _get_versions(app_id, platform, channel, version):
         try:
             pu = v.partialupdate
@@ -121,7 +121,7 @@ def get_version(app_id, platform, channel, version, userid):
             percent = pu.percent
             if not (userid_int % int(100 / percent)) == 0:
                 continue
-        if v.allowed_user_ids and userid not in v.allowed_user_ids.split('\n'):
+        if v.allowed_oem_ids and oem_id not in v.allowed_oem_ids.split('\n'):
             continue
         return v
     raise Version.DoesNotExist
@@ -129,6 +129,7 @@ def get_version(app_id, platform, channel, version, userid):
 def on_app(apps_list, app, os, userid):
     app_id = app.get('appid')
     version = app.get('version')
+    oem_id = app.get('oem')
     platform = os.get('platform')
     channel = parser.get_channel(app)
     ping = bool(app.findall('ping'))
@@ -137,7 +138,7 @@ def on_app(apps_list, app, os, userid):
     updatecheck = app.findall('updatecheck')
 
     try:
-        version = get_version(app_id, platform, channel, version, userid)
+        version = get_version(app_id, platform, channel, version, userid, oem_id)
     except Version.DoesNotExist:
         apps_list.append(
             build_app(updatecheck=Updatecheck_negative() if updatecheck else None))

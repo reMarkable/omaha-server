@@ -29,12 +29,12 @@ request_update_check = b"""<?xml version="1.0" encoding="UTF-8"?>
          requestid="{C8F6EDF3-B623-4ee6-B2DA-1D08A0B4C665}">
     <os platform="win" version="6.1" sp="" arch="x64"/>
     <app appid="{430FD4D0-B729-4F61-AA34-91526481799D}" version="1.2.23.0" nextversion="" lang="en" brand="GGLS"
-         client="someclientid" installage="39">
+         client="someclientid" installage="39" oem="RM110-000-0113" >
         <updatecheck/>
         <ping r="1"/>
     </app>
     <app appid="{D0AB2EBC-931B-4013-9FEB-C9C4C2225C8C}" version="2.2.2.0" nextversion="" lang="en" brand="GGLS"
-         client="" installage="6">
+         client="" installage="6" oem="RM110-000-0113" >
         <updatecheck/>
         <ping r="1"/>
     </app>

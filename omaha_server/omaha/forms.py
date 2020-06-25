@@ -68,10 +68,10 @@ class VersionAdminForm(forms.ModelForm):
         _file = self.cleaned_data["file"]
         return _file.size
 
-    def clean_allowed_user_ids(self):
+    def clean_allowed_oem_ids(self):
         return '\n'.join(
             line.strip()
-            for line in self.cleaned_data['allowed_user_ids'].split('\n')
+            for line in self.cleaned_data['allowed_oem_ids'].split('\n')
             if line.strip()
         )
 

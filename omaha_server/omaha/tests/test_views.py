@@ -106,11 +106,11 @@ class UpdateViewTest(OverloadTestStorageMixin, TestCase, XmlTestMixin):
     @freeze_time('2014-01-01 15:41:48')  # 56508 sec
     @temporary_media_root(MEDIA_URL='http://cache.pack.google.com/edgedl/chrome/install/782.112/')
     @patch('omaha.models.version_upload_to', lambda o, f: f)
-    def test_updatecheck_allowed_user_ids(self):
+    def test_updatecheck_allowed_oem_ids(self):
         app, platform, channel = self._set_up_positive_updatecheck()
         v = self._create_version(
             app, platform, (channel,), '13.0.782.111', './chrome_installer_critical.exe',
-            is_critical=True, allowed_user_ids='some-nonexistent-device-id'
+            is_critical=True, allowed_oem_ids='some-nonexistent-device-id'
         )
 
         response = self.client.post(reverse('update'),
@@ -122,7 +122,7 @@ class UpdateViewTest(OverloadTestStorageMixin, TestCase, XmlTestMixin):
         self.assertXmlEquivalentOutputs(response.content,
                                         fixtures.response_update_check_positive)
 
-        v.allowed_user_ids = '{D0BBD725-742D-44ae-8D46-0231E881D58E}'
+        v.allowed_oem_ids = 'RM110-000-0113'
         v.save()
 
         response = self.client.post(reverse('update'),
