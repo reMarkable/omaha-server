@@ -72,7 +72,7 @@ class VersionAdmin(admin.ModelAdmin):
     list_display_links = ('created', 'modified', 'version',)
     list_filter = ('channels__name', 'platform__name', 'app__name',)
     readonly_fields = ('file_sha256',)
-    exclude = ('file_hash',)
+    exclude = ('file_hash', 'release_notes')
     form = VersionAdminForm
 
     def get_queryset(self, version):
