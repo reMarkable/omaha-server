@@ -1,0 +1,4 @@
+from .settings_s3 import *
+
+AWS_S3_CUSTOM_DOMAIN = AWS_S3_HOST + '/' + AWS_STORAGE_BUCKET_NAME
+S3_URL = 'https://' + AWS_S3_HOST + '/' + AWS_STORAGE_BUCKET_NAME
