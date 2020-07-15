@@ -37,3 +37,6 @@ deploy/google/app.yaml
 
 venv/
 .idea/
+
+celerybeat-schedule
+celerybeat.pid
