@@ -11,7 +11,7 @@
             <item>
                 <title>{{ version }}</title>
                 <description><![CDATA[
-                    {% if version.release_notes %}{{ version.release_notes }}{% endif %}
+                    {% if version.release_notes %}{{ version.release_notes | safe }}{% endif %}
                 ]]>
                 </description>
                 <pubDate>{{ version.created|date:"r" }}</pubDate>
