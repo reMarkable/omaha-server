@@ -57,7 +57,7 @@ class BuilderTest(TestCase):
                                               '',
                                               userid))
 
-    def test_get_version_partial_update(self):
+    def test_get_version_partial_update(self, add_pu_to_channel=True):
         userid = "{%s}" % UUID(int=1)
         userid_beta = "{%s}" % UUID(int=40)
         version = VersionFactory.create(file=SimpleUploadedFile('./chrome_installer.exe', b''))
@@ -70,11 +70,13 @@ class BuilderTest(TestCase):
         channel = version.channels.get()
         version_beta.channels.add(channel)
 
-        PartialUpdate.objects.create(version=version_beta,
-                                     percent=5,
-                                     start_date=datetime.now(),
-                                     end_date=datetime.now(),
-                                     active_users=ACTIVE_USERS_DICT_CHOICES['all'])
+        pu = PartialUpdate.objects.create(version=version_beta,
+                                          percent=5,
+                                          start_date=datetime.now(),
+                                          end_date=datetime.now(),
+                                          active_users=ACTIVE_USERS_DICT_CHOICES['all'])
+        if add_pu_to_channel:
+            pu.channels.add(channel)
 
         self.assertEqual(version, get_version(version.app.pk,
                                               version.platform.name,
@@ -82,11 +84,17 @@ class BuilderTest(TestCase):
                                               '36.0.2062.124',
                                               userid))
 
-        self.assertEqual(version_beta, get_version(version.app.pk,
-                                                   version.platform.name,
-                                                   channel.name,
-                                                   '36.0.2062.124',
-                                                   userid_beta))
+        expected_version_pu = version_beta if add_pu_to_channel else version
+        self.assertEqual(expected_version_pu, get_version(version.app.pk,
+                                              version.platform.name,
+                                              channel.name,
+                                              '36.0.2062.124',
+                                              userid_beta))
+
+
+    def test_get_version_partial_update_not_on_channel(self):
+        self.test_get_version_partial_update(add_pu_to_channel=False)
+
 
     def test_get_app_version_channel(self):
         userid = '{D0BBD725-742D-44ae-8D46-0231E881D58E}'
@@ -119,11 +127,13 @@ class BuilderTest(TestCase):
         channel = version.channels.get()
         version_beta.channels.add(channel)
 
-        PartialUpdate.objects.create(version=version_beta,
-                                     percent=5,
-                                     start_date=datetime.now(),
-                                     end_date=datetime.now(),
-                                     active_users=ACTIVE_USERS_DICT_CHOICES['all'])
+        pu = PartialUpdate.objects.create(version=version_beta,
+                                          percent=5,
+                                          start_date=datetime.now(),
+                                          end_date=datetime.now(),
+                                          active_users=ACTIVE_USERS_DICT_CHOICES['all'])
+        pu.channels.add(channel)
+
 
         self.assertEqual(version, get_version(version.app.pk,
                                               version.platform.name,
@@ -161,10 +171,11 @@ class BuilderTest(TestCase):
         id = get_id(userid_beta)
         mark_event('request', id)
 
-        PartialUpdate.objects.create(version=version_beta,
-                                     percent=5,
-                                     start_date=datetime.now(),
-                                     end_date=datetime.now())
+        pu = PartialUpdate.objects.create(version=version_beta,
+                                          percent=5,
+                                          start_date=datetime.now(),
+                                          end_date=datetime.now())
+        pu.channels.add(channel)
 
         self.assertEqual(version, get_version(version.app.pk,
                                               version.platform.name,

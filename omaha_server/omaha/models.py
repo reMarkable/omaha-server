@@ -222,6 +222,8 @@ ACTIVE_USERS_DICT_CHOICES = dict(
 
 ACTIVE_USERS_CHOICES = zip(ACTIVE_USERS_DICT_CHOICES.values(), ACTIVE_USERS_DICT_CHOICES.keys())
 
+def _prod_channel():
+    return Channel.objects.filter(name='Prod').values_list('pk', flat=True)
 
 class PartialUpdate(models.Model):
     is_enabled = models.BooleanField(default=True, db_index=True)
@@ -229,6 +231,7 @@ class PartialUpdate(models.Model):
     percent = PercentField()
     start_date = models.DateField(db_index=True)
     end_date = models.DateField(db_index=True)
+    channels = models.ManyToManyField(Channel, db_index=True, default=_prod_channel)
     exclude_new_users = models.BooleanField(default=True)
     active_users = models.PositiveSmallIntegerField(
         help_text='Active users in the past ...',

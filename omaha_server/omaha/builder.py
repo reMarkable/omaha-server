@@ -92,7 +92,8 @@ def _get_versions(app_id, platform, channel, version):
         Q(
             partialupdate__is_enabled=True,
             partialupdate__start_date__lte=date,
-            partialupdate__end_date__gte=date
+            partialupdate__end_date__gte=date,
+            partialupdate__channels__name=channel
         )
     )
     qs = qs.prefetch_related("actions", "partialupdate")
