@@ -78,18 +78,18 @@ class BuilderTest(TestCase):
         if add_pu_to_channel:
             pu.channels.add(channel)
 
-        self.assertEqual(version, get_version(version.app.pk,
-                                              version.platform.name,
-                                              channel.name,
-                                              '36.0.2062.124',
-                                              userid))
+        exp_version = version if add_pu_to_channel else version_beta
+        self.assertEqual(exp_version, get_version(version.app.pk,
+                                                  version.platform.name,
+                                                  channel.name,
+                                                  '36.0.2062.124',
+                                                  userid))
 
-        expected_version_pu = version_beta if add_pu_to_channel else version
-        self.assertEqual(expected_version_pu, get_version(version.app.pk,
-                                              version.platform.name,
-                                              channel.name,
-                                              '36.0.2062.124',
-                                              userid_beta))
+        self.assertEqual(version_beta, get_version(version.app.pk,
+                                       version.platform.name,
+                                       channel.name,
+                                       '36.0.2062.124',
+                                       userid_beta))
 
 
     def test_get_version_partial_update_not_on_channel(self):

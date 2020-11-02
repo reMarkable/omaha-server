@@ -76,7 +76,7 @@ def is_new_user(version):
     return False
 
 
-@cached_as(Version, timeout=60)
+# @cached_as(Version, timeout=60)
 def _get_versions(app_id, platform, channel, version):
     date = now().date()
 
@@ -92,11 +92,10 @@ def _get_versions(app_id, platform, channel, version):
         Q(
             partialupdate__is_enabled=True,
             partialupdate__start_date__lte=date,
-            partialupdate__end_date__gte=date,
-            partialupdate__channels__name=channel
+            partialupdate__end_date__gte=date
         )
     )
-    qs = qs.prefetch_related("actions", "partialupdate")
+    qs = qs.prefetch_related("actions", "partialupdate", "partialupdate__channels")
     critical = []
     normal = []
     for version in qs.order_by('-version').cache():
@@ -114,14 +113,15 @@ def get_version(app_id, platform, channel, version, userid, oem_id=''):
         except PartialUpdate.DoesNotExist:
             pass
         else:
-            if pu.exclude_new_users and is_new_user(version):
-                continue
-            if not is_user_active(pu.active_users, userid):
-                continue
-            userid_int = UUID(userid).int
-            percent = pu.percent
-            if not (userid_int % int(100 / percent)) == 0:
-                continue
+            if channel in set(ch.name for ch in pu.channels.all()):
+                if pu.exclude_new_users and is_new_user(version):
+                    continue
+                if not is_user_active(pu.active_users, userid):
+                    continue
+                userid_int = UUID(userid).int
+                percent = pu.percent
+                if not (userid_int % int(100 / percent)) == 0:
+                    continue
         if v.allowed_oem_ids and oem_id not in v.allowed_oem_ids.split('\n'):
             continue
         return v
