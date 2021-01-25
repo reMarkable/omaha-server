@@ -109,7 +109,7 @@ LOGGING = {
             'propagate': False,
         },
         'omaha.parser': {
-            'level': 'INFO',
+            'level': 'WARNING',
             'handlers': ['console'],
             'propagate': False,
         },
