@@ -379,3 +379,5 @@ TINYMCE_DEFAULT_CONFIG = {
     'paste_text_sticky_default': True,
     'plugins': 'table,media'
 }
+
+HEALTHCHECKS_CELERY_ID = os.environ.get('HEALTHCHECKS_CELERY_ID')

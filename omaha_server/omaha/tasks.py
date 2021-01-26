@@ -22,7 +22,7 @@ import logging
 import uuid
 import boto
 
-
+from django.conf import settings
 from django.template import defaultfilters as filters
 
 from omaha_server.celery import app
@@ -41,6 +41,7 @@ from omaha.models import Version
 from sparkle.models import SparkleVersion
 from crash.models import Crash, Symbols
 from feedback.models import Feedback
+from urllib import urlopen
 
 logger = logging.getLogger(__name__)
 
@@ -168,6 +169,11 @@ def deferred_manual_cleanup(model, limit_size=None, limit_days=None, limit_dupli
 
 @app.task(name='tasks.auto_monitoring_size', ignore_result=True)
 def auto_monitoring_size():
+    if settings.HEALTHCHECKS_CELERY_ID and not settings.DEBUG:
+        try:
+            urlopen('https://hck.io/' + settings.HEALTHCHECKS_CELERY_ID)
+        except Exception:
+            pass
     monitoring_size()
 
 
