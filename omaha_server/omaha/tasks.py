@@ -171,7 +171,7 @@ def deferred_manual_cleanup(model, limit_size=None, limit_days=None, limit_dupli
 def auto_monitoring_size():
     if settings.HEALTHCHECKS_CELERY_ID and not settings.DEBUG:
         try:
-            urlopen('https://hck.io/' + settings.HEALTHCHECKS_CELERY_ID)
+            urlopen('https://hc-ping.com/' + settings.HEALTHCHECKS_CELERY_ID)
         except Exception:
             pass
     monitoring_size()
